@@ -21,7 +21,7 @@ impl Default for Pose {
     }
 }
 
-impl Pose{
+impl Pose {
     pub(crate) fn forward(&mut self) {
         match self.heading {
             'E' => self.x += 1,
@@ -57,7 +57,7 @@ impl Pose{
             'S' => self.heading = 'W',
             'W' => self.heading = 'N',
             'N' => self.heading = 'E',
-            _ => (),    
+            _ => (),
         }
     }
 }

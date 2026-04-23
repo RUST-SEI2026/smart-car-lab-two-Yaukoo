@@ -12,7 +12,10 @@ pub struct State {
 
 impl State {
     pub fn new() -> Self {
-        State { reverse: false, accelerate: false }
+        State {
+            reverse: false,
+            accelerate: false,
+        }
     }
 
     /// 收到 B 指令时切换倒车标志
@@ -29,9 +32,9 @@ impl State {
     pub fn actions_for_move(&self) -> Vec<Action> {
         match (self.reverse, self.accelerate) {
             (false, false) => vec![Action::Forward],
-            (true,  false) => vec![Action::Backward],
-            (false, true)  => vec![Action::Forward, Action::Forward],
-            (true,  true)  => vec![Action::Backward, Action::Backward],
+            (true, false) => vec![Action::Backward],
+            (false, true) => vec![Action::Forward, Action::Forward],
+            (true, true) => vec![Action::Backward, Action::Backward],
         }
     }
 
@@ -39,9 +42,9 @@ impl State {
     pub fn actions_for_left(&self) -> Vec<Action> {
         match (self.reverse, self.accelerate) {
             (false, false) => vec![Action::TurnLeft],
-            (true,  false) => vec![Action::TurnRight],
-            (false, true)  => vec![Action::Forward, Action::TurnLeft],
-            (true,  true)  => vec![Action::Backward, Action::TurnRight],
+            (true, false) => vec![Action::TurnRight],
+            (false, true) => vec![Action::Forward, Action::TurnLeft],
+            (true, true) => vec![Action::Backward, Action::TurnRight],
         }
     }
 
@@ -49,9 +52,9 @@ impl State {
     pub fn actions_for_right(&self) -> Vec<Action> {
         match (self.reverse, self.accelerate) {
             (false, false) => vec![Action::TurnRight],
-            (true,  false) => vec![Action::TurnLeft],
-            (false, true)  => vec![Action::Forward, Action::TurnRight],
-            (true,  true)  => vec![Action::Backward, Action::TurnLeft],
+            (true, false) => vec![Action::TurnLeft],
+            (false, true) => vec![Action::Forward, Action::TurnRight],
+            (true, true) => vec![Action::Backward, Action::TurnLeft],
         }
     }
 }
