@@ -1,5 +1,3 @@
-use crate::action::Action;
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Pose {
     pub x: i32,

@@ -1,23 +1,57 @@
+use crate::action::Action;
+
 /// 小车行驶状态
-/// - Normal：正常状态
-/// - Reverse：倒车状态（B 指令触发，再次收到 B 则取消）
+
 #[derive(Debug, Clone, PartialEq)]
-pub enum State {
-    Normal,
-    Reverse,
+pub struct State {
+    /// 是否处于倒车状态（B 指令切换）
+    reverse: bool,
+    /// 是否处于加速状态（F 指令切换）
+    accelerate: bool,
 }
 
 impl State {
-    /// 收到 B 指令时切换状态
-    pub fn toggle_reverse(&mut self) {
-        *self = match self {
-            State::Normal => State::Reverse,
-            State::Reverse => State::Normal,
-        };
+    pub fn new() -> Self {
+        State { reverse: false, accelerate: false }
     }
 
-    /// 当前是否处于倒车状态
-    pub fn is_reverse(&self) -> bool {
-        *self == State::Reverse
+    /// 收到 B 指令时切换倒车标志
+    pub fn toggle_reverse(&mut self) {
+        self.reverse = !self.reverse;
+    }
+
+    /// 收到 F 指令时切换加速标志
+    pub fn toggle_accelerate(&mut self) {
+        self.accelerate = !self.accelerate;
+    }
+
+    /// 根据当前状态，将 M 指令翻译为原子操作序列
+    pub fn actions_for_move(&self) -> Vec<Action> {
+        match (self.reverse, self.accelerate) {
+            (false, false) => vec![Action::Forward],
+            (true,  false) => vec![Action::Backward],
+            (false, true)  => vec![Action::Forward, Action::Forward],
+            (true,  true)  => vec![Action::Backward, Action::Backward],
+        }
+    }
+
+    /// 根据当前状态，将 L 指令翻译为原子操作序列
+    pub fn actions_for_left(&self) -> Vec<Action> {
+        match (self.reverse, self.accelerate) {
+            (false, false) => vec![Action::TurnLeft],
+            (true,  false) => vec![Action::TurnRight],
+            (false, true)  => vec![Action::Forward, Action::TurnLeft],
+            (true,  true)  => vec![Action::Backward, Action::TurnRight],
+        }
+    }
+
+    /// 根据当前状态，将 R 指令翻译为原子操作序列
+    pub fn actions_for_right(&self) -> Vec<Action> {
+        match (self.reverse, self.accelerate) {
+            (false, false) => vec![Action::TurnRight],
+            (true,  false) => vec![Action::TurnLeft],
+            (false, true)  => vec![Action::Forward, Action::TurnRight],
+            (true,  true)  => vec![Action::Backward, Action::TurnLeft],
+        }
     }
 }
