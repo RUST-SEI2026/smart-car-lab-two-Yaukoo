@@ -298,3 +298,134 @@ mod reverse_tests {
         assert_eq!(Pose::new(0, -1, 'E'), executor.query());
     }
 }
+
+// ===== F 指令（加速）测试 =====
+// 需求：
+//   F：进入/退出加速状态
+//   加速状态下：
+//     M：前进 2 格（逐格，不跳跃）
+//     L：先前进 1 格，再左转 90 度
+//     R：先前进 1 格，再右转 90 度
+//
+//   B+F 叠加状态下：
+//     M：后退 2 格（逐格，不跳跃）
+//     L：先后退 1 格，再右转 90 度
+//     R：先后退 1 格，再左转 90 度
+mod accelerate_tests {
+    use super::*;
+
+    // --- F+M：四个朝向各前进 2 格 ---
+
+    #[test]
+    fn should_return_x_plus_2_given_f_then_m_and_facing_is_e() {
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'E'));
+        executor.execute("FM");
+        assert_eq!(Pose::new(2, 0, 'E'), executor.query());
+    }
+
+    #[test]
+    fn should_return_y_minus_2_given_f_then_m_and_facing_is_s() {
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'S'));
+        executor.execute("FM");
+        assert_eq!(Pose::new(0, -2, 'S'), executor.query());
+    }
+
+    #[test]
+    fn should_return_x_minus_2_given_f_then_m_and_facing_is_w() {
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'W'));
+        executor.execute("FM");
+        assert_eq!(Pose::new(-2, 0, 'W'), executor.query());
+    }
+
+    #[test]
+    fn should_return_y_plus_2_given_f_then_m_and_facing_is_n() {
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("FM");
+        assert_eq!(Pose::new(0, 2, 'N'), executor.query());
+    }
+
+    // --- F+L：先前进 1 格，再左转 ---
+
+    #[test]
+    fn should_forward_then_turn_left_given_f_then_l_and_facing_is_n() {
+        // 朝北前进 1 格 → (0,1)，再左转 → 朝西
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("FL");
+        assert_eq!(Pose::new(0, 1, 'W'), executor.query());
+    }
+
+    #[test]
+    fn should_forward_then_turn_left_given_f_then_l_and_facing_is_e() {
+        // 朝东前进 1 格 → (1,0)，再左转 → 朝北
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'E'));
+        executor.execute("FL");
+        assert_eq!(Pose::new(1, 0, 'N'), executor.query());
+    }
+
+    // --- F+R：先前进 1 格，再右转 ---
+
+    #[test]
+    fn should_forward_then_turn_right_given_f_then_r_and_facing_is_n() {
+        // 朝北前进 1 格 → (0,1)，再右转 → 朝东
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("FR");
+        assert_eq!(Pose::new(0, 1, 'E'), executor.query());
+    }
+
+    #[test]
+    fn should_forward_then_turn_right_given_f_then_r_and_facing_is_e() {
+        // 朝东前进 1 格 → (1,0)，再右转 → 朝南
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'E'));
+        executor.execute("FR");
+        assert_eq!(Pose::new(1, 0, 'S'), executor.query());
+    }
+
+    // --- 再次收到 F：取消加速状态，恢复正常 ---
+
+    #[test]
+    fn should_cancel_accelerate_given_f_twice_then_m_facing_n() {
+        // FF 取消加速，M 正常前进 1 格
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("FFM");
+        assert_eq!(Pose::new(0, 1, 'N'), executor.query());
+    }
+
+    // ===== B+F 叠加状态 =====
+
+    // --- B+F+M：后退 2 格 ---
+
+    #[test]
+    fn should_return_y_minus_2_given_bf_then_m_and_facing_is_n() {
+        // 朝北，B+F 叠加，M 后退 2 格
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("BFM");
+        assert_eq!(Pose::new(0, -2, 'N'), executor.query());
+    }
+
+    #[test]
+    fn should_return_x_minus_2_given_bf_then_m_and_facing_is_e() {
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'E'));
+        executor.execute("BFM");
+        assert_eq!(Pose::new(-2, 0, 'E'), executor.query());
+    }
+
+    // --- B+F+L：先后退 1 格，再右转 ---
+
+    #[test]
+    fn should_backward_then_turn_right_given_bf_then_l_and_facing_is_n() {
+        // 朝北后退 1 格 → (0,-1)，再右转 → 朝东
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("BFL");
+        assert_eq!(Pose::new(0, -1, 'E'), executor.query());
+    }
+
+    // --- B+F+R：先后退 1 格，再左转 ---
+
+    #[test]
+    fn should_backward_then_turn_left_given_bf_then_r_and_facing_is_n() {
+        // 朝北后退 1 格 → (0,-1)，再左转 → 朝西
+        let mut executor = Executor::with_pose(Pose::new(0, 0, 'N'));
+        executor.execute("BFR");
+        assert_eq!(Pose::new(0, -1, 'W'), executor.query());
+    }
+}
