@@ -31,6 +31,17 @@ impl Pose{
             _ => (),
         }
     }
+
+    /// 沿当前朝向后退一格（与 forward 方向相反）
+    pub(crate) fn backward(&mut self) {
+        match self.heading {
+            'E' => self.x -= 1,
+            'S' => self.y += 1,
+            'W' => self.x += 1,
+            'N' => self.y -= 1,
+            _ => (),
+        }
+    }
     pub(crate) fn turn_left(&mut self) {
         match self.heading {
             'E' => self.heading = 'N',
